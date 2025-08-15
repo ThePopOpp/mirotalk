@@ -1,11 +1,20 @@
+# docker-compose.yml
 services:
   mirotalksfu:
     image: mirotalk/sfu:latest
-    container_name: mirotalksfu
     restart: unless-stopped
+
+    # 1) Load variables from .env (Coolify reads this from your repo)
     env_file:
       - ./.env
+
+    # 2) "Belt & suspenders": also mount the .env inside the container
+    #    so the app can read /src/.env directly.
+    volumes:
+      - ./.env:/src/.env:ro
+
+    # Expose the app and media ports
     ports:
-      - "3010:3010"                    # app/http (Coolify will proxy 443 -> 3010)
+      - "3010:3010"                    # App / signaling (Coolify/Traefik will proxy HTTPS -> 3010)
       - "40000-40100:40000-40100/udp"  # WebRTC media (UDP)
-      - "40000-40100:40000-40100/tcp"  # TCP fallback (optional)
+      - "40000-40100:40000-40100/tcp"  # TCP fallback for media (optional)
